@@ -44,19 +44,6 @@ object TreeOps {
     case _ => Seq.empty[Tree]
   }
 
-  def getDequeueSpots(tree: Tree): Set[TokenHash] = {
-    val ret =
-      new scala.collection.mutable.SetBuilder[TokenHash, Set[TokenHash]](
-          Set[TokenHash]())
-    tree.tokens.foreach {
-      case t: `else` =>
-        ret += hash(t)
-      case _ =>
-    }
-    ret.result()
-//    Set.empty[TokenHash]
-  }
-
   def getStatementStarts(tree: Tree): Map[TokenHash, Tree] = {
     val ret = new scala.collection.mutable.MapBuilder[
         TokenHash, Tree, Map[TokenHash, Tree]](Map[TokenHash, Tree]())

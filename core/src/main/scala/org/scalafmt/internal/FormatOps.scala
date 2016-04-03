@@ -27,10 +27,37 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
   import TreeOps._
 
   val tokens: Array[FormatToken] = FormatToken.formatTokens(tree.tokens)
+  val matchingParentheses = getMatchingParentheses(tree.tokens)
   val ownersMap = getOwners(tree)
   val statementStarts = getStatementStarts(tree)
   val dequeueSpots = getDequeueSpots(tree) ++ statementStarts.keys
-  val matchingParentheses = getMatchingParentheses(tree.tokens)
+
+  def getDequeueSpots(tree: Tree): Set[TokenHash] = {
+    val ret =
+      new scala.collection.mutable.SetBuilder[TokenHash, Set[TokenHash]](
+          Set[TokenHash]())
+    var expire = tree.tokens.head
+    var activeApply = tree
+    var inside = false
+    tree.tokens.foreach {
+      case t: `else` =>
+        ret += hash(t)
+      case t: `,` if ownersMap(hash(t)) == activeApply =>
+        logger.elem(leftTok2tok(t))
+        ret += hash(t)
+      case t
+          if !inside &&
+          ((t, owners(t)) match {
+                case (_: `(`, _: Term.Apply) => true
+                case _ => false
+              }) =>
+        activeApply = owners(t)
+        inside = true
+        expire = matchingParentheses(hash(t))
+      case _ =>
+    }
+    ret.result()
+  }
 
   @inline
   def owners(token: Token): Tree = ownersMap(hash(token))
