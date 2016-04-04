@@ -31,6 +31,7 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
   val ownersMap = getOwners(tree)
   val statementStarts = getStatementStarts(tree)
   val dequeueSpots = getDequeueSpots(tree) ++ statementStarts.keys
+  val dequeueConfigStyle = false
 
   def getDequeueSpots(tree: Tree): Set[TokenHash] = {
     val ret =
@@ -43,20 +44,29 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
       case t: `else` =>
         ret += hash(t)
       case t: `,` if ownersMap(hash(t)) == activeApply =>
-        logger.elem(leftTok2tok(t))
-        ret += hash(t)
-      case t
-          if !inside &&
-          ((t, owners(t)) match {
-                case (_: `(`, _: Term.Apply) => true
-                case _ => false
-              }) =>
-        activeApply = owners(t)
+        val sibling = leftTok2tok(t)
+        val dequeueToken =
+          if (isInlineComment(sibling.right)) next(sibling).right
+          else sibling.right
+        ret += hash(dequeueToken)
+      case t: `(` if !inside =>
         inside = true
         expire = matchingParentheses(hash(t))
+        if (dequeueConfigStyle && owners(t).isInstanceOf[Term.Apply] &&
+            isConfigStyle(t)) {
+          activeApply = owners(t)
+        }
       case _ =>
     }
     ret.result()
+  }
+
+  def isConfigStyle(open: `(`): Boolean = {
+    val openTok = leftTok2tok(open)
+    val closeTok = prev(leftTok2tok(matchingParentheses(hash(open))))
+    style.configStyleArguments &&
+    (newlinesBetween(openTok.between) > 0 || isInlineComment(openTok.right)) &&
+    newlinesBetween(closeTok.between) > 0
   }
 
   @inline

@@ -399,11 +399,11 @@ class Router(formatOps: FormatOps) {
             case Decision(t@FormatToken(_, `close`, _), splits) =>
               Decision(t, Seq(Split(Newline, 0)))
           })
-        val closeFormatToken = prev(leftTok2tok(close))
 
-        val isConfigStyle =
-          style.configStyleArguments && newlinesBetween(between) > 0 &&
-          newlinesBetween(closeFormatToken.between) > 0
+        val isConfig = open match {
+          case t: `(` => isConfigStyle(t)
+          case _ => false
+        }
 
         val modification =
           if (right.isInstanceOf[Comment]) newlines2Modification(between)
@@ -430,33 +430,32 @@ class Router(formatOps: FormatOps) {
             Split(modification,
                   0,
                   policy = singleLine,
-                  ignoreIf = !fitsOnOneLine || isConfigStyle)
+                  ignoreIf = !fitsOnOneLine || isConfig)
               .withOptimalToken(expirationToken)
               .withIndent(indent, close, Left),
             Split(newlineModification,
                   (1 + nestedPenalty + lhsPenalty) * bracketMultiplier,
                   policy = singleLine,
-                  ignoreIf = !fitsOnOneLine || isConfigStyle)
+                  ignoreIf = !fitsOnOneLine || isConfig)
               .withOptimalToken(expirationToken)
               .withIndent(indent, close, Left),
             // TODO(olafur) singleline per argument!
             Split(modification,
                   (2 + lhsPenalty) * bracketMultiplier,
                   policy = oneArgOneLine,
-                  ignoreIf = singleArgument || isConfigStyle ||
-                    tooManyArguments)
+                  ignoreIf = singleArgument || isConfig || tooManyArguments)
               .withOptimalToken(expirationToken)
               .withIndent(StateColumn, close, Right),
             Split(Newline,
                   (3 + nestedPenalty + lhsPenalty) * bracketMultiplier,
                   policy = oneArgOneLine,
-                  ignoreIf = singleArgument || isConfigStyle)
+                  ignoreIf = singleArgument || isConfig)
               .withOptimalToken(expirationToken)
               .withIndent(indent, close, Left),
             Split(Newline,
                   0,
                   policy = configStyle,
-                  ignoreIf = !isConfigStyle).withIndent(indent, close, Right)
+                  ignoreIf = !isConfig).withIndent(indent, close, Right)
         )
 
       // Closing def site ): ReturnType

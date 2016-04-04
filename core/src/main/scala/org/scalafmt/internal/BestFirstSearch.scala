@@ -40,7 +40,7 @@ class BestFirstSearch(val formatOps: FormatOps, range: Set[Range]) {
     */
   val maxQueueSize = 555
 
-  val escapeInPathologicalCases = false && doOptimizations
+  val escapeInPathologicalCases = true && doOptimizations
 
   /**
     * Whether to listen to optimalAt fields in Splits.
@@ -213,7 +213,6 @@ class BestFirstSearch(val formatOps: FormatOps, range: Set[Range]) {
                 Q.size > maxQueueSize ||
                 !statementStarts.contains(hash(splitToken.left))) &&
             curr.splits.last.modification.isNewline) {
-          logger.elem(splitToken)
           Q.dequeueAll
         }
 
