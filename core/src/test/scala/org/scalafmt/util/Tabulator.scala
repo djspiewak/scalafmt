@@ -14,7 +14,7 @@ object Tabulator {
           if (cell == null) 0
           else cell.toString.length)
       val colSizes = for (col <- sizes.transpose) yield col.max
-      val rows = for (row <- table) yield formatRow(row, colSizes)
+      val rows     = for (row <- table) yield formatRow(row, colSizes)
       formatRows(rowSeparator(colSizes), rows)
   }
 

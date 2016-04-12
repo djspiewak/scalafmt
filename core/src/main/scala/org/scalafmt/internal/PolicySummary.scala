@@ -22,7 +22,7 @@ class PolicySummary(val policies: Vector[Policy]) {
   }
 
   def execute(decision: Decision, debug: Boolean = false): Decision = {
-    var last = decision
+    var last   = decision
     var result = decision
     policies.foreach { policy =>
       if (policy.f.isDefinedAt(result)) {

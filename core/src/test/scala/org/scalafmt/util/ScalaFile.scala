@@ -15,9 +15,9 @@ case class ScalaFile(filename: String, projectUrl: String, commit: String) {
   }
 
   def githubUrl = s"$projectUrl/blob/$commit$filename"
-  def userRepo = projectUrl.stripPrefix("https://github.com/")
-  def repo = userRepo.split("/")(1)
-  def user = userRepo.split("/")(0)
+  def userRepo  = projectUrl.stripPrefix("https://github.com/")
+  def repo      = userRepo.split("/")(1)
+  def user      = userRepo.split("/")(0)
 
   override def toString: String = s"""ScalaFile(
                                      |    project: $user
@@ -66,8 +66,10 @@ object ScalaFile {
   }
 
   def getAll: Seq[ScalaFile] = {
-    if (!FileOps.getFile("target", "repos").isDirectory) {
+    if (!FileOps.getFile("repos.tar.gz").isDirectory) {
       downloadReposTar()
+    }
+    if (!FileOps.getFile("target", "repos").isDirectory) {
       extractReposTar()
     }
 
@@ -82,8 +84,8 @@ object ScalaFile {
 
     files.flatMap { repo =>
       val repoPrefix = repo.getPath // + File.pathSeparator
-      val commit = FileOps.readFile(new File(repo, "COMMIT")).trim
-      val url = FileOps.readFile(new File(repo, "URL")).trim
+      val commit     = FileOps.readFile(new File(repo, "COMMIT")).trim
+      val url        = FileOps.readFile(new File(repo, "URL")).trim
       FileOps
         .listFiles(repo)
         .withFilter(_.endsWith(".scala"))

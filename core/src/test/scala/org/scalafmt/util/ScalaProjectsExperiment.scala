@@ -31,7 +31,7 @@ trait ScalaProjectsExperiment {
 
   val results: java.util.List[ExperimentResult] =
     new CopyOnWriteArrayList[ExperimentResult]()
-  val verbose = false
+  val verbose   = false
   val colLength = 10
   val numberFormat = {
     // I prefer . as thousand separator.
@@ -98,7 +98,7 @@ trait ScalaProjectsExperiment {
         }
         categoryResults.foreach {
           case _: Success | _: Skipped =>
-          case e => println(e)
+          case e                       => println(e)
         }
         if (categoryResults.nonEmpty) {
           println()
@@ -107,7 +107,7 @@ trait ScalaProjectsExperiment {
     val formatStats = new DescriptiveStatistics()
     results.foreach {
       case x: Success => formatStats.addValue(x.nanos)
-      case _ =>
+      case _          =>
     }
     println(s"Total: ${results.length}")
     println(s"${summarize(formatStats)}")
@@ -139,7 +139,7 @@ trait ScalaProjectsExperiment {
     strings.map { s =>
       val x = s match {
         case d: Double => numberFormat.format(d)
-        case _ => s
+        case _         => s
       }
       x.toString.slice(0, colLength - 2).padTo(colLength - 1, " ").mkString
     }.mkString(" ")

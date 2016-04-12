@@ -1,5 +1,9 @@
 package org.scalafmt.internal
 
+import org.scalafmt.internal.ExpiresOn.Right
+import org.scalafmt.internal.ExpiresOn.Left
+import org.scalafmt.internal.Length.StateColumn
+import org.scalafmt.internal.Length.Num
 import org.scalafmt.internal.Policy.NoPolicy
 import org.scalafmt.util.TokenOps
 import scala.meta.tokens.Token
@@ -41,14 +45,14 @@ case class Split(modification: Modification,
   val indentation = indents
     .map(_.length match {
       case Num(x) => x.toString
-      case x => x.toString
+      case x      => x.toString
     })
     .mkString("[", ", ", "]")
 
   def length: Int = modification match {
     case m if m.isNewline => 0
-    case NoSplit => 0
-    case Space => 1
+    case NoSplit          => 0
+    case Space            => 1
     case Provided(code) =>
       val firstLine = code.indexOf("\n")
       if (firstLine == -1) code.length
@@ -57,7 +61,7 @@ case class Split(modification: Modification,
 
   def withOptimalToken(token: Option[Token]): Split = token match {
     case Some(token) => withOptimalToken(token)
-    case _ => this
+    case _           => this
   }
 
   def withOptimalToken(token: Token, killOnFail: Boolean = false): Split = {

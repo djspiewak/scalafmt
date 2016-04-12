@@ -11,7 +11,7 @@ object UnitTests extends HasTests {
     */
   def getTestFiles: Vector[String] = {
     val testsFiles = listFiles(testDir).filter(filename2parse(_).isDefined)
-    val onlyTests = testsFiles.filter(_.contains("\n<<< ONLY"))
+    val onlyTests  = testsFiles.filter(_.contains("\n<<< ONLY"))
     if (onlyTests.nonEmpty) onlyTests
     else testsFiles
   }

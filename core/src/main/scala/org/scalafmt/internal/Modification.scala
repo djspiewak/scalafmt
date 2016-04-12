@@ -2,10 +2,16 @@ package org.scalafmt.internal
 
 sealed abstract class Modification {
 
-  def isNewline = this match {
-    case _: NewlineT => true
+  def isNewline: Boolean = this match {
+    case _: NewlineT                           => true
     case Provided(code) if code.contains('\n') => true
-    case _ => false
+    case _                                     => false
+  }
+
+  def newlines: Int = this match {
+    case n: NewlineT    => if (n.isDouble) 2 else 1
+    case Provided(code) => code.count(_ == '\n')
+    case _              => 0
   }
 }
 
@@ -24,10 +30,10 @@ case object Newline extends NewlineT {
 
   def apply(gets2x: Boolean, hasIndent: Boolean = false): NewlineT =
     (gets2x, hasIndent) match {
-      case (true, true) => Newline2xNoIndent
+      case (true, true)  => Newline2xNoIndent
       case (true, false) => Newline2x
       case (false, true) => NoIndentNewline
-      case _ => Newline
+      case _             => Newline
     }
 }
 

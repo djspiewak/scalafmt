@@ -1,19 +1,20 @@
 package org.scalafmt.internal
 
 import org.scalafmt.Error.CaseMissingArrow
-import org.scalafmt.ScalaStyle
+import org.scalafmt.ScalafmtStyle
+import org.scalafmt.ScalafmtRunner
 import org.scalafmt.util.LoggerOps
 import org.scalafmt.util.TokenOps
 import org.scalafmt.util.TreeOps
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.meta.Tree
-import scala.meta.internal.ast.Case
-import scala.meta.internal.ast.Defn
-import scala.meta.internal.ast.Pkg
-import scala.meta.internal.ast.Template
-import scala.meta.internal.ast.Term
-import scala.meta.internal.ast.Type
+import scala.meta.Case
+import scala.meta.Defn
+import scala.meta.Pkg
+import scala.meta.Template
+import scala.meta.Term
+import scala.meta.Type
 import scala.meta.prettyprinters.Structure
 import scala.meta.tokens.Token
 import scala.meta.tokens.Token._
@@ -21,15 +22,25 @@ import scala.meta.tokens.Token._
 /**
   * Helper functions for generating splits/policies for a given tree.
   */
-class FormatOps(val tree: Tree, val style: ScalaStyle) {
+class FormatOps(val tree: Tree,
+                val style: ScalafmtStyle,
+                val runner: ScalafmtRunner) {
   import LoggerOps._
   import TokenOps._
   import TreeOps._
 
   val tokens: Array[FormatToken] = FormatToken.formatTokens(tree.tokens)
-  val ownersMap = getOwners(tree)
-  val statementStarts = getStatementStarts(tree)
-  val dequeueSpots = getDequeueSpots(tree) ++ statementStarts.keys
+  val ownersMap                  = getOwners(tree)
+  val statementStarts            = getStatementStarts(tree)
+  val argumentStarts: Set[TokenHash] = {
+    val b                            = Set.newBuilder[TokenHash]
+    tree.collect {
+      case t: Term.Arg if t.tokens.nonEmpty =>
+        b += hash(t.tokens.head)
+    }
+    b.result()
+  }
+  val dequeueSpots        = getDequeueSpots(tree) ++ statementStarts.keys
   val matchingParentheses = getMatchingParentheses(tree.tokens)
 
   @inline
@@ -134,7 +145,7 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
 
   def isMarginizedString(token: Token): Boolean = token match {
     case start: Interpolation.Start =>
-      val end = matchingParentheses(hash(start))
+      val end      = matchingParentheses(hash(start))
       val afterEnd = next(leftTok2tok(end))
       afterEnd.left.code == "." && afterEnd.right.code == "stripMargin"
     case string: Literal.String =>
@@ -262,6 +273,7 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
     * For example, in:
     * foo.bar[T](1, 2)
     * the last token is the final )
+    *
     * @param dot the dot owned by the select.
     */
   def getSelectsLastToken(dot: `.`): Token = {
@@ -313,7 +325,7 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
       parent <- function.parent
       blockEnd <- parent match {
         case b: Term.Block if b.stats.length == 1 => Some(b.tokens.last)
-        case _ => None
+        case _                                    => None
       }
     } yield blockEnd).getOrElse(function.tokens.last)
   }
@@ -332,13 +344,13 @@ class FormatOps(val tree: Tree, val style: ScalaStyle) {
                   x
                 // Type compounds can be inside defn.defs
                 case (_: `{`, _: Type.Compound) => true
-                case _ => false
+                case _                          => false
               }) =>
         inside = true
         expire = matchingParentheses(hash(t))
       case x if x == expire => inside = false
-      case x if inside => result += x
-      case _ =>
+      case x if inside      => result += x
+      case _                =>
     }
     result.result()
   }

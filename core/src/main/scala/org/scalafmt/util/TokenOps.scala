@@ -8,9 +8,9 @@ import org.scalafmt.internal.NoSplit
 import org.scalafmt.internal.Policy
 import org.scalafmt.internal.Space
 import scala.meta.Tree
-import scala.meta.internal.ast.Defn
-import scala.meta.internal.ast.Pkg
-import scala.meta.internal.ast.Template
+import scala.meta.Defn
+import scala.meta.Pkg
+import scala.meta.Template
 import scala.meta.tokens.Token
 import scala.meta.tokens.Token._
 
@@ -62,7 +62,7 @@ object TokenOps {
   def lastToken(tree: Tree): Token = {
     val lastIndex = tree.tokens.lastIndexWhere {
       case _: Trivia | _: EOF => false
-      case _ => true
+      case _                  => true
     }
     if (lastIndex == -1) tree.tokens.last
     else tree.tokens(lastIndex)
@@ -98,13 +98,13 @@ object TokenOps {
   }
 
   val symbolOperatorPrecendence: PartialFunction[Char, Int] = {
-    case '|' => 2
-    case '^' => 3
-    case '&' => 4
-    case '=' | '!' => 5
-    case '<' | '>' => 6
-    case ':' => 7
-    case '+' | '-' => 8
+    case '|'             => 2
+    case '^'             => 3
+    case '&'             => 4
+    case '=' | '!'       => 5
+    case '<' | '>'       => 6
+    case ':'             => 7
+    case '+' | '-'       => 8
     case '*' | '/' | '%' => 9
   }
 
@@ -117,14 +117,14 @@ object TokenOps {
 
   def isOpenApply(token: Token, includeCurly: Boolean = false): Boolean =
     token match {
-      case _: `(` | _: `[` => true
+      case _: `(` | _: `[`        => true
       case _: `{` if includeCurly => true
-      case _ => false
+      case _                      => false
     }
 
   def isSingleIdentifierAnnotation(tok: FormatToken): Boolean = tok match {
     case FormatToken(_: `@`, _: Ident, _) => true
-    case _ => false
+    case _                                => false
   }
 
   /**
@@ -145,7 +145,7 @@ object TokenOps {
 
   def isInlineComment(token: Token): Boolean = token match {
     case c: Comment => c.code.startsWith("//")
-    case _ => false
+    case _          => false
   }
 
   def newlines2Modification(between: Vector[Whitespace]): Modification =
@@ -164,10 +164,10 @@ object TokenOps {
 
   def defnTemplate(tree: Tree): Option[Template] = tree match {
     case t: Defn.Object => Some(t.templ)
-    case t: Defn.Class => Some(t.templ)
-    case t: Defn.Trait => Some(t.templ)
-    case t: Pkg.Object => Some(t.templ)
-    case _ => None
+    case t: Defn.Class  => Some(t.templ)
+    case t: Defn.Trait  => Some(t.templ)
+    case t: Pkg.Object  => Some(t.templ)
+    case _              => None
   }
 
   def tokenLength(token: Token): Int = token match {
@@ -191,21 +191,21 @@ object TokenOps {
 
   def isFormatOn(token: Token): Boolean = token match {
     case c: Comment if formatOnCode.contains(c.code.toLowerCase) => true
-    case _ => false
+    case _                                                       => false
   }
 
   def isFormatOff(token: Token): Boolean = token match {
     case c: Comment if formatOffCode.contains(c.code.toLowerCase) => true
-    case _ => false
+    case _                                                        => false
   }
 
   val formatOffCode = Set(
       "// @formatter:off", // IntelliJ
-      "// format: off" // scalariform
+      "// format: off"     // scalariform
   )
 
   val formatOnCode = Set(
       "// @formatter:on", // IntelliJ
-      "// format: on" // scalariform
+      "// format: on"     // scalariform
   )
 }
