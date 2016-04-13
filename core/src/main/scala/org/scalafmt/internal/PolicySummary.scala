@@ -30,7 +30,7 @@ class PolicySummary(val policies: Vector[Policy]) {
         result = policy.f(result)
         // TODO(olafur Would be nice to enforce this at compile time.
         assert(result.formatToken == last.formatToken)
-        if (debug) {
+        if (debug || true) {
           logger.debug(s"$policy defined at $result")
         }
       }

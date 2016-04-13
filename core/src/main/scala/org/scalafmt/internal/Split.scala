@@ -8,7 +8,8 @@ import org.scalafmt.internal.Policy.NoPolicy
 import org.scalafmt.util.TokenOps
 import scala.meta.tokens.Token
 
-case class OptimalToken(token: Token, killOnFail: Boolean = false)
+case class OptimalToken(
+    token: Token, maxCost: Int = 0, killOnFail: Boolean = false)
 
 /**
   * A Split is the whitespace between two non-whitespace tokens.
@@ -64,7 +65,8 @@ case class Split(modification: Modification,
     case _ => this
   }
 
-  def withOptimalToken(token: Token, killOnFail: Boolean = false): Split = {
+  def withOptimalToken(
+      token: Token, maxCost: Int = 0, killOnFail: Boolean = false): Split = {
     require(optimalAt.isEmpty)
     new Split(modification,
               cost,
@@ -72,7 +74,7 @@ case class Split(modification: Modification,
               indents,
               policy,
               true,
-              Some(OptimalToken(token, killOnFail)))(line)
+              Some(OptimalToken(token, maxCost, killOnFail)))(line)
   }
 
   def withPolicy(newPolicy: Policy): Split = {

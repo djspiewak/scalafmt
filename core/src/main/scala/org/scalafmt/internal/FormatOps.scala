@@ -106,6 +106,13 @@ class FormatOps(val tree: Tree,
     }
   }
 
+  def safeFilterNewlines(splits: Seq[Split])(
+      implicit line: sourcecode.Line): Seq[Split] = {
+    val allNewlines = splits.filter(_.modification.isNewline)
+    if (allNewlines.isEmpty) Seq(Split(Newline, 0))
+    else allNewlines
+  }
+
   @tailrec
   final def rhsOptimalToken(start: FormatToken): Token = start.right match {
     case _: `,` | _: `(` | _: `)` | _: `]` | _: `;` | _: `=>`

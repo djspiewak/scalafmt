@@ -63,7 +63,7 @@ class BestFirstSearch(
       // TODO(olafur) document why/how this optimization works.
       val result = !best.get(splitToken.left).exists(_.alwaysBetter(curr))
       if (!result) {
-        logger.trace(s"Eliminated $curr ${curr.splits.last}")
+        logger.debug(s"Eliminated $curr ${curr.splits.last}")
       }
       result
     }
@@ -214,17 +214,18 @@ class BestFirstSearch(
           var optimalNotFound = true
           actualSplit.foreach { split =>
             val nextState = State.next(curr, style, split, splitToken)
-            if (depth == 0 && split.modification.isNewline) {
+            if (split.modification.isNewline && depth == 0 &&
+                curr.policy.isSafe) {
               best.update(splitToken.left, nextState)
             }
             runner.eventCallback(Enqueue(split))
             split.optimalAt match {
-              case Some(OptimalToken(token, killOnFail))
+              case Some(OptimalToken(token, optimalMaxCost, killOnFail))
                   if acceptOptimalAtHints && actualSplit.length > 1 &&
                   depth < MaxDepth && split.cost == 0 =>
-                val nextNextState =
-                  shortestPath(nextState, token, depth + 1, maxCost = 0)(
-                      sourcecode.Line.generate)
+                val nextNextState = shortestPath(
+                    nextState, token, depth + 1, maxCost = optimalMaxCost)(
+                    sourcecode.Line.generate)
                 if (hasReachedEof(nextNextState) ||
                     (nextNextState.splits.length < tokens.length && tokens(
                             nextNextState.splits.length).left.start >= token.start)) {
@@ -235,6 +236,12 @@ class BestFirstSearch(
                   // TODO(olafur) DRY. This solution can still be optimal.
                   Q.enqueue(nextState)
                 } // else kill branch
+                else {
+//                  logger.elem(split,
+//                              token,
+//                              tokens(nextNextState.splits.length),
+//                              nextNextState.splits.drop(curr.splits.length))
+                }
               case _
                   if optimalNotFound &&
                   nextState.cost - curr.cost <= maxCost =>

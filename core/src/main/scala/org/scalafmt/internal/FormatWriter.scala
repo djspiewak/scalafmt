@@ -145,7 +145,7 @@ class FormatWriter(formatOps: FormatOps) {
   private def getAlignOwner(formatToken: FormatToken): Tree =
     formatToken match {
       // Corner case when line ends with comment
-      // TODO(olafur) should this be part of owners?
+        // TODO(olafur) should this be part of ownerss?
       case FormatToken(x, c: Comment, _) if isInlineComment(c) =>
         owners(x)
       case FormatToken(_, r, _) => owners(r)

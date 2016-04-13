@@ -147,13 +147,13 @@ class Router(formatOps: FormatOps) {
                 }
                 // put newline after => if there is a newline before }
                 val newlineAfterArrow: PartialFunction[Decision, Decision] = {
-                  case Decision(t@FormatToken(`arrow`, _, _), s) =>
+                  case d@Decision(t@FormatToken(`arrow`, _, _), s) =>
                     Decision(t, s.filter(_.modification.isNewline))
                 }
                 val singleLineUntilArrow = newlineBeforeClosingCurly
                   .andThen(SingleLineBlock(arrow).f)
                   .andThen(newlineAfterArrow)
-
+                  .copy(isSingleLine = true)
                   (true, singleLineUntilArrow, Some(arrow), 0)
             }
             .getOrElse {
@@ -170,13 +170,17 @@ class Router(formatOps: FormatOps) {
             }
 
         val skipSingleLineBlock = ignore || newlinesBetween(between) > 0
+        val lambdaOptimaToken =
+          lambdaArrow.map(OptimalToken(_, maxCost = 10, killOnFail = true))
 
         Seq(
             Split(Space, 0, ignoreIf = skipSingleLineBlock)
               .withOptimalToken(close, killOnFail = true)
               .withPolicy(SingleLineBlock(close)),
-            Split(Space, 0, ignoreIf = !startsLambda)
-              .withOptimalToken(lambdaArrow)
+            Split(Space,
+                  0,
+                  ignoreIf = !startsLambda,
+                  optimalAt = lambdaOptimaToken)
               .withIndent(lambdaIndent, close, Right)
               .withPolicy(lambdaPolicy),
             // cost=2 for last split is necessary because:
