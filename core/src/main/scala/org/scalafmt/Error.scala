@@ -1,5 +1,7 @@
 package org.scalafmt
 
+import scala.meta.tokens.Token
+
 import java.io.File
 
 import org.scalafmt.internal.Decision
@@ -41,6 +43,10 @@ object Error {
   case class UnexpectedTree[Expected <: Tree : ClassTag](obtained: Tree)
       extends Error(
           s"Expected: ${classTag[Expected].getClass}\nObtained: ${log(obtained)}")
+
+  case class CantFindToken[Expected <: Token : ClassTag](tree: Tree)
+      extends Error(
+          s"Expected token ${classTag[Expected].getClass} in tree: ${log(tree)}")
 
   case class CantFormatFile(msg: String)
       extends Error("scalafmt cannot format this file:\n" + msg)

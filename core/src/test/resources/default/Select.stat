@@ -214,3 +214,15 @@ class TypedPipeJoinWithDescriptionJob {
     .values
     .write(TypedTsv[((Int, String), Option[Boolean])]("output"))
 }
+<<< SKIP indent tuple
+val singleLineUntilArrow = newlineBeforeClosingCurly
+  .andThen(SingleLineBlock(arrow).f)
+  .andThen(newlineAfterArrow)
+
+  (true, singleLineUntilArrow, Some(arrow), 0)
+>>>
+val singleLineUntilArrow = newlineBeforeClosingCurly
+  .andThen(SingleLineBlock(arrow).f)
+  .andThen(newlineAfterArrow)
+
+(true, singleLineUntilArrow, Some(arrow), 0)

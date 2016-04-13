@@ -25,3 +25,30 @@ def withDedicatedVar: Unit = {
     })
   }
 }
+<<< single line case #150 with newline before }
+    val reads = paramSymbols.zip(apply.args).map { case (param, term) =>
+      val assign = term match{
+        case q"ammonite.repl.ScriptInit.arg($inner)" =>
+
+          val newPrefix = q"ammonite.repl.ScriptInit.parseScriptArg"
+          q"$newPrefix[${param.typeSignature}](${param.name.decoded}, $inner)"
+        case x => x // This case should only be for default args, which we leave unchanged
+      }
+      assign
+}
+>>>
+val reads = paramSymbols.zip(apply.args).map { case (param, term) =>
+  val assign = term match {
+    case q"ammonite.repl.ScriptInit.arg($inner)" =>
+      val newPrefix = q"ammonite.repl.ScriptInit.parseScriptArg"
+      q"$newPrefix[${param.typeSignature}](${param.name.decoded}, $inner)"
+    case x =>
+      x // This case should only be for default args, which we leave unchanged
+  }
+  assign
+}
+<<< single line case #150
+val reads = paramSymbols.map { case (param, term) => param
+}
+>>>
+val reads = paramSymbols.map { case (param, term) => param }

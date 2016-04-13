@@ -2,6 +2,7 @@ package org.scalafmt.internal
 
 import scala.language.implicitConversions
 
+import org.scalafmt.Error.CantFindToken
 import org.scalafmt.internal.ExpiresOn.Right
 import org.scalafmt.internal.ExpiresOn.Left
 import org.scalafmt.internal.Length.StateColumn
@@ -146,6 +147,22 @@ class Router(formatOps: FormatOps) {
                   newlineBeforeClosingCurly.andThen(SingleLineBlock(
                           arrow.getOrElse(owner.params.last.tokens.last)).f)
                 (true, singleLineUntilArrow, arrow, 0)
+              case owner: Case
+                  if newlines == 0 &&
+                  owner.parent.exists(getCases(_).length == 1) =>
+                val arrow = owner.tokens.find(_.isInstanceOf[`=>`]).getOrElse {
+                  throw CantFindToken[`=>`](owner)
+                }
+                // put newline after => if there is a newline before }
+                val newlineAfterArrow: PartialFunction[Decision, Decision] = {
+                  case Decision(t@FormatToken(`arrow`, _, _), s) =>
+                    Decision(t, s.filter(_.modification.isNewline))
+                }
+                val singleLineUntilArrow = newlineBeforeClosingCurly
+                  .andThen(SingleLineBlock(arrow).f)
+                  .andThen(newlineAfterArrow)
+
+                  (true, singleLineUntilArrow, Some(arrow), 0)
             }
             .getOrElse {
               leftOwner match {
@@ -156,12 +173,11 @@ class Router(formatOps: FormatOps) {
                   val singleLineUntilArrow = newlineBeforeClosingCurly.andThen(
                       SingleLineBlock(arrow.getOrElse(t.self.tokens.last)).f)
                   (true, singleLineUntilArrow, arrow, 2)
-                case _ => (false, NoPolicy, None, 0)
+                case x => (false, NoPolicy, None, 0)
               }
             }
 
-        val skipSingleLineBlock =
-          ignore || startsLambda || newlinesBetween(between) > 0
+        val skipSingleLineBlock = ignore || newlinesBetween(between) > 0
 
         Seq(
             Split(Space, 0, ignoreIf = skipSingleLineBlock)
@@ -171,7 +187,12 @@ class Router(formatOps: FormatOps) {
               .withOptimalToken(lambdaArrow)
               .withIndent(lambdaIndent, close, Right)
               .withPolicy(lambdaPolicy),
-            Split(nl, 1)
+            // cost=2 for last split is necessary because:
+            // x.map { case (a, b) =>
+            //   ...
+            // }
+            // costs 1.
+            Split(nl, 2)
               .withPolicy(newlineBeforeClosingCurly)
               .withIndent(2, close, Right)
           )

@@ -1,5 +1,7 @@
 package org.scalafmt.util
 
+import scala.meta.Case
+
 import org.scalafmt.Error
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -372,5 +374,11 @@ object TreeOps {
           if block.stats.headOption.exists(_.isInstanceOf[Term.Function]) =>
         lastLambda(block.stats.head.asInstanceOf[Term.Function])
       case _ => first
+    }
+  def getCases(tree: Tree): Seq[Case] =
+    tree match {
+      case t: Term.PartialFunction => t.cases
+      case t: Term.Match => t.cases
+      case _ => Seq.empty[Case]
     }
 }
