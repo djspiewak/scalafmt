@@ -33,7 +33,7 @@ class FormatOps(val tree: Tree,
   val ownersMap                  = getOwners(tree)
   val statementStarts            = getStatementStarts(tree)
   val argumentStarts: Set[TokenHash] = {
-    val b                            = Set.newBuilder[TokenHash]
+    val b = Set.newBuilder[TokenHash]
     tree.collect {
       case t: Term.Arg if t.tokens.nonEmpty =>
         b += hash(t.tokens.head)
@@ -313,7 +313,7 @@ class FormatOps(val tree: Tree,
   def selectExpire(dot: `.`): Token = {
     val owner = ownersMap(hash(dot))
     (for {
-      parent <- owner.parent
+      parent    <- owner.parent
       (_, args) <- splitApplyIntoLhsAndArgsLifted(parent) if args.nonEmpty
     } yield {
       args.last.tokens.last

@@ -77,7 +77,7 @@ object State {
         else column + split.length
       }
     val lengthOnLastLine = {
-      val lastNewline    = tok.right.code.lastIndexOf('\n')
+      val lastNewline = tok.right.code.lastIndexOf('\n')
       if (lastNewline == -1) tokLength
       else tokLength - lastNewline - 1
     }

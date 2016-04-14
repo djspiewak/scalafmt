@@ -20,7 +20,7 @@ object FileOps {
         files.map(_.getPath) ++ dirs.flatMap(listFilesIter)
       }
       for {
-        f0 <- Option(listFilesIter(file)).toVector
+        f0       <- Option(listFilesIter(file)).toVector
         filename <- f0
       } yield filename
     }

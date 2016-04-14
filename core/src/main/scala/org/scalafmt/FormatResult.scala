@@ -12,7 +12,7 @@ sealed abstract class FormatResult {
 }
 
 object FormatResult {
-  case class Success(formattedCode: String) extends FormatResult
+  case class Success(formattedCode: String)    extends FormatResult
   case class Incomplete(formattedCode: String) extends FormatResult
   // TODO(olafur) more precise info.
   case class Failure(e: Throwable) extends FormatResult

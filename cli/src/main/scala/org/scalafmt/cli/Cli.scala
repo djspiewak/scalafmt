@@ -126,7 +126,7 @@ object Cli {
     } text s"See ScalafmtConfig scaladoc."
     opt[Seq[String]]("alignTokens") action { (tokens, c) =>
       val alignsTokens = tokens.map { token =>
-        val splitted   = token.split(";", 2)
+        val splitted = token.split(";", 2)
         if (splitted.length != 2)
           throw new IllegalArgumentException("align token must contain ;")
         AlignToken(splitted(0), splitted(1))

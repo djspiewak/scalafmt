@@ -13,8 +13,8 @@ object GitInfo {
 
   val travis: Option[GitInfo] = for {
     isTravis <- sys.env.get("TRAVIS") if isTravis == "true"
-    isCi <- sys.env.get("CONTINUOUS_INTEGRATION") if isCi == "true"
-    commit <- sys.env.get("TRAVIS_COMMIT")
+    isCi     <- sys.env.get("CONTINUOUS_INTEGRATION") if isCi == "true"
+    commit   <- sys.env.get("TRAVIS_COMMIT")
   } yield {
     val branch = sys.env
       .get("TRAVIS_PULL_REQUEST")
