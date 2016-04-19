@@ -221,11 +221,11 @@ def x = 2
 <<< ONLY migrate javadoc -> scaladoc tricky #179
 object A {
   /** Foo bar baz.
-    * Cool because of:
-    *  - a
-    *  - b
-    *  - c
-    */
+   *  Cool because of:
+   *   - a
+   *   - b
+   *   - c
+   */
   def x = 2
 }
 >>>

@@ -24,6 +24,7 @@ import scala.meta.parsers.ParseException
 
 trait HasTests extends FunSuiteLike with FormatAssertions {
   import LoggerOps._
+  lazy val debugResults = mutable.ArrayBuilder.make[Result]
   val scalafmtRunner = ScalafmtRunner.default.copy(
       debug = true,
       maxStateVisits = 100000,
@@ -95,6 +96,10 @@ trait HasTests extends FunSuiteLike with FormatAssertions {
       case "default" | "standard" | "scala" => ScalafmtStyle.unitTest80
       case "scalajs" => ScalafmtStyle.scalaJs
       case "stripMargin" => ScalafmtStyle.default
+      case "spaces" =>
+        ScalafmtStyle.default.copy(
+            spacesInsideParens = true
+        )
       case "align" =>
         ScalafmtStyle.default.copy(alignTokens = AlignToken.default)
       case style => throw UnknownStyle(style)
@@ -142,11 +147,14 @@ trait HasTests extends FunSuiteLike with FormatAssertions {
 
   def runTestsDefault(): Unit = {
     testsToRun.foreach(runTest(defaultRun))
+    FileOps.writeFile(
+        "target/index.html", Report.heatmap(debugResults.result()))
   }
 
   def defaultRun(t: DiffTest, parse: Parse[_ <: Tree]): Unit = {
     val runner = scalafmtRunner.withParser(parse)
     val obtained = Scalafmt.format(t.original, t.style, runner).get
+    saveResult(t, obtained, isOnly(t.name))
     assertFormatPreservesAst(t.original, obtained)(parse)
     assertNoDiff(obtained, t.expected)
   }
