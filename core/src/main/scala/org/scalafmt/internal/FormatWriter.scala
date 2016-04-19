@@ -49,7 +49,11 @@ class FormatWriter(formatOps: FormatOps) {
     val spaces: String =
       if (isDocstring && style.scalaDocs) " " * (indent + 2)
       else " " * (indent + 1)
-    comment.code.replaceAll("\n *\\*", s"\n$spaces\\*")
+    // Unindent by space if there were two before, see #179
+    val unindentSpace =
+      if (style.scalaDocs) "( (?= ))?"
+      else ""
+    comment.code.replaceAll("\n *\\*" + unindentSpace, s"\n$spaces\\*")
   }
 
   private def formatMarginizedString(token: Token, indent: Int): String = {

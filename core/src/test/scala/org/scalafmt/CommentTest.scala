@@ -9,8 +9,8 @@ class CommentTest extends FunSuite with DiffAssertions {
   test("javadoc docstrings are correct") {
     val original = """object a {
                      |/**
-                     |   * Y is cool
-                     |   */
+                     |  * Y is cool
+                     |  */
                      |val y = 2
                      |}
       """.stripMargin

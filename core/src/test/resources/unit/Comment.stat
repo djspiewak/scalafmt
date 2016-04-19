@@ -1,4 +1,5 @@
 40 columns                              |
+
 <<< Inline comment binds left
 function(a,// comment
          b)
@@ -178,7 +179,7 @@ x match {
 <<< indent multiline comments
 object a {
 /*
-* This
+*  This
 * is
 * multiline
 */
@@ -203,3 +204,36 @@ List(1).filter(_ > 0)
  .map { x =>
    // complicated stuff
  }
+<<< migrate javadoc -> scaladoc #179
+/** Foo bar baz.
+ *  - a
+ *  - b
+ *  - c
+ */
+def x = 2
+>>>
+/** Foo bar baz.
+  * - a
+  * - b
+  * - c
+  */
+def x = 2
+<<< ONLY migrate javadoc -> scaladoc tricky #179
+object A {
+  /** Foo bar baz.
+    * Cool because of:
+    *  - a
+    *  - b
+    *  - c
+    */
+  def x = 2
+}
+>>>
+object A {
+ /** Foo bar baz.
+   *   - a
+   *   - b
+   *   - c
+   */
+ def x = 2
+}
