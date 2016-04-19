@@ -51,15 +51,21 @@ class FormatTests
     .withFilter(testShouldRun)
     .foreach(runTest(run))
 
-  def run(t: DiffTest, parse: Parse[_ <: Tree]): Unit = {
-    val runner = scalafmtRunner.withParser(parse)
-    val obtained = Scalafmt.format(t.original, t.style, runner) match {
-      case FormatResult.Incomplete(code) =>
-        code
+  def getUnsafeResult(formatResult: FormatResult): String =
+    formatResult match {
+      case FormatResult.Incomplete(code) => code
       case x => x.get
     }
+
+  def run(t: DiffTest, parse: Parse[_ <: Tree]): Unit = {
+    val runner = scalafmtRunner.withParser(parse)
+    val obtained = getUnsafeResult(
+        Scalafmt.format(t.original, t.style, runner))
     debugResults += saveResult(t, obtained, onlyOne)
     assertFormatPreservesAst(t.original, obtained)(parse)
+    val formattedAgain = getUnsafeResult(
+        Scalafmt.format(obtained, t.style, runner))
+    assert(formattedAgain == obtained, "non-idempotent")
     if (!onlyManual) {
       assertNoDiff(obtained, t.expected)
     }
